@@ -61,14 +61,14 @@ V.genericSearch = function(params, type) {
         if (j==0) {
             for (key in index) {
                 searchTarget = index[key];
-                if (searchTarget[criterion] && searchTarget[criterion] === params[criterion]) {
+                if (searchTarget[searchTerm] && searchTarget[searchTerm] === criterion) {
                     candidates[key] = searchTarget; // can't delete items from index, so accumulate the first pass into candidates
                 }
             }
         } else {
             for (key in candidates) {
                 searchTarget = candidates[key];
-                if (!searchTarget[criterion] || searchTarget[criterion] !== params[criterion]) {
+                if (!searchTarget[searchTerm] || searchTarget[searchTerm] !== criterion) {
                     delete candidates[key]; // remove candidiates that fail subsequent passes
                 }
             }
