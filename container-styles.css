@@ -1,0 +1,10 @@
+html, body, iframe { /* reset */
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+html, body { width: 100%; height: 100% }
+#container { width: 100%; height: 99.5% }
