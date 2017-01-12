@@ -77,8 +77,25 @@ V.genericSearch = function(params, type) {
 
     return V.utils.objToArray(candidates);
 };
-V.findThingsByName = function(name) {
+V.findThingsByName = function(name) { // supports multiple items with the same name
     return V.genericSearch({'name': name});
+};
+V.findCharactersByName = function(name) {
+    return V.genericSearch({'name': name}, 'characters');
+};
+V.findLocationByName = function(name) {
+    var locs = V.genericSearch({'name': name}, 'locations');
+    if (locs) {
+        return locs[0];
+    } else {
+        return null;
+    }
+};
+V.getThingsInLocation = function(locationName) {
+    return V.genericSearch({'location': locationName}, 'things');
+};
+V.getCharactersInLocation = function(locationName) {
+    return V.genericSearch({'location': locationName}, 'characters');
 };
 
 V.getRandomLocation = function(constraint) {
