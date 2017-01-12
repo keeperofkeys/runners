@@ -3,8 +3,8 @@ var V = {};
 
 V.init = function(params) {
     V.initializeLocations(params.map);
-    V.initializeCharacters(params.characters);
     V.initializeThings(params.things);
+    V.initializeCharacters(params.characters);
     V.PLAYER = params.PLAYER
 };
 
@@ -69,13 +69,16 @@ V.genericSearch = function(params, type) {
             for (key in candidates) {
                 searchTarget = candidates[key];
                 if (!searchTarget[searchTerm] || searchTarget[searchTerm] !== criterion) {
-                    delete candidates[key]; // remove candidiates that fail subsequent passes
+                    delete candidates[key]; // remove candidates that fail subsequent passes
                 }
             }
         }
     }
 
     return V.utils.objToArray(candidates);
+};
+V.findThingsByName = function(name) {
+    return V.genericSearch({'name': name});
 };
 
 V.getRandomLocation = function(constraint) {
@@ -135,8 +138,16 @@ V.Thing.prototype.lookAt = function(character) {
         return V.messages.notPresent;
     }
 };
-V.Thing.prototype.destroy = function() {
-    delete V.index.things[this.id];
+V.Thing.prototype.destroy = function(character) {
+    if (this.isPresent(character)) {
+        if (this.breakable) {
+            delete V.index.things[this.id];
+        } else {
+            return V.messages.unbreakable;
+        }
+    } else {
+        return V.messages.notPresent;
+    }
 };
 V.Thing.prototype.isPresent = function(character) {
     character = character || V.PLAYER;
@@ -174,12 +185,23 @@ V.Character = function(o) {
         }
     }
 
+    this.inventory = [];
+    if (o.inventory) {
+        var i, itemName, items;
+        for (i = 0; i < o.inventory.length; i++) {
+            itemName = o.inventory[i];
+            items = V.findThingsByName(itemName);
+            this.inventory.push(items[0]);
+        }
+    }
+
     V.index.characters[this.id] = this;
 };
 
 
 V.messages = { // TODO: make overrides for this
-    notPresent: "What are you talking about?"
+    notPresent: "What are you talking about?",
+    unbreakable: "Unbreakable!"
 };
 
 V.utils = {

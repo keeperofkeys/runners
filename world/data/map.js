@@ -37,6 +37,10 @@
                     return "Its colour changes to " + (b.on ? "green." : "red.");
                 }
             }
+        },
+        piano: {
+            name: "piano",
+            description: "It's a baby grand"
         }
     };
 
@@ -52,7 +56,8 @@
                 charisma: 'r',
                 stamina: 20, // 0-100
                 morality: 'r'
-            }
+            },
+            inventory: ['piano']
         },
         herbert: {
             name: "Herbert",
