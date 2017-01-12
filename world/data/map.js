@@ -75,7 +75,7 @@
     };
 
     V.init({
-        PLAYER: 'myself',
+        PLAYER: 'me',
         map: map,
         characters: characters,
         things: things

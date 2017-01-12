@@ -5,7 +5,13 @@ V.init = function(params) {
     V.initializeLocations(params.map);
     V.initializeThings(params.things);
     V.initializeCharacters(params.characters);
-    V.PLAYER = params.PLAYER
+
+    var pChars = V.findCharactersByName(params.PLAYER);
+    if (pChars.length != 1) {
+        console.error('There must be exactly one character with the name ' + params.PLAYER);
+        dieInAFire();
+    }
+    V.PLAYER = pChars[0];
 };
 
 V.index = {
