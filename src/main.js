@@ -133,7 +133,10 @@ V.Thing = function(o) {
     // description might be a function that figures out what the text description should be, based on state of thing
     // in that case, thing is passed in as only param
 
-    this.location = o.location || null;
+    if (o.location) {
+        var loc = V.findLocationByName(o.location);
+    }
+    this.location = o.location || null; // name, not id
     this.hidden = o.hidden || false;
 
     // add bespoke properties
@@ -224,7 +227,7 @@ V.Character = function(o) {
 
 V.messages = { // TODO: make overrides for this
     notPresent: "What are you talking about?",
-    unbreakable: "Unbreakable!"
+    unbreakable: "Unbreakable, dammit!"
 };
 
 V.utils = {
