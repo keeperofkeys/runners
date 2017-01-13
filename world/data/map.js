@@ -21,11 +21,13 @@
     var things = {
         whisk: {
             name: "whisk",
+            grammarName: "a whisk",
             description: "It's pink and dangerous.",
             location: "kitchen"
         },
         button: {
             name: "button",
+            grammarName: "some kind of button",
             description: function(b) {
                 return "The button is glowing " + (b.on ? "green." : "red.");
             },
@@ -40,6 +42,7 @@
         },
         piano: {
             name: "piano",
+            grammarName: "a piano",
             description: "It's a baby grand"
         }
     };

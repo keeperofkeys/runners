@@ -102,35 +102,71 @@ V.findLocationByName = function(name) {
 V.getThingsInLocation = function(locationName) {
     return V.genericSearch({'location': locationName}, 'things');
 };
-V.getCharactersInLocation = function(locationName) {
-    return V.genericSearch({'location': locationName}, 'characters');
+V.getCharactersInLocation = function(locationName, includePlayer) {
+    var chars = V.genericSearch({'location': locationName}, 'characters'),
+        i;
+    if (!includePlayer) {
+        for (i = 0; i < chars.length; i++) {
+            if (chars[i].id == V.PLAYER.id) {
+                chars.splice(i, 1);
+                break;
+            }
+        }
+    }
+    return chars;
 };
 
 V.getRandomLocation = function(constraint) {
     var possibilities = Object.keys(V.index.locations),
         pin,
-        testLoc;
+        testLoc,
+        testLocId;
     while (possibilities.length) {
         pin = Math.floor(Math.random()*possibilities.length);
-        testLoc = V.index.locations[pin];
+        testLocId = possibilities[pin];
+        testLoc = V.index.locations[testLocId];
         if (constraint) {
             if (constraint(testLoc)) {
-                return testLoc;
+                return testLocId;
             } else {
                 possibilities.splice(pin,1);
             }
         } else {
-            return testLoc;
+            return testLocId;
         }
     }
     return null;
 };
-
+V.getThingsText = function(things) {
+    var i, text = V.messages.thingsInRoom1,
+        thingCount = things.length;
+    for (i=0; i < thingCount; i++) {
+        if (i > 0 && i == thingCount - 1) {
+            text += ", and "
+        } else if (i > 0) {
+            text += " and "
+        }
+        text += things[i].grammarName;
+    }
+    return text + '.';
+};
+V.getCharactersText = function(characters) {
+    var i, text = V.messages.charactersInRoom1,
+        thingCount = characters.length;
+    for (i=0; i < thingCount; i++) {
+        if (i > 0) {
+            text += "and "
+        }
+        text += characters[i].name;
+    }
+    return text + (thingCount > 1 ? V.messages.charactersInRoom2plural : V.messages.charactersInRoom2singular);
+};
 
 V.Thing = function(o) {
     var extraProp;
 
     this.name = o.name;
+    this.grammarName = o.grammarName;
     this.description = o.description;
     // description might be a function that figures out what the text description should be, based on state of thing
     // in that case, thing is passed in as only param
@@ -160,6 +196,8 @@ V.Thing.prototype.lookAt = function(character) {
             descString = this.description;
         } else if (typeof this.description == 'function') {
             descString = this.description(this);
+        } else {
+            descString = '';
         }
         return descString; // thing methods may have side effects. If they return text, it is handled in the default way for that game
     } else {
@@ -181,6 +219,15 @@ V.Thing.prototype.isPresent = function(character) {
     character = character || V.PLAYER;
     return (this.location == character.location);
 };
+V.Thing.prototype.getDescription = function() {
+    var thingText;
+    if (typeof this.description == 'function') {
+        thingText = this.description(this);
+    } else {
+        thingText = this.description ? this.description : '';
+    }
+    return thingText;
+};
 
 V.Location = function(id, o) {
     this.name = o.name;
@@ -189,6 +236,28 @@ V.Location = function(id, o) {
     this.id = id;
 
     V.index.locations[this.id] = this;
+};
+V.Location.prototype.getDescription = function() {
+    var locationText;
+    if (typeof this.description == 'function') {
+        locationText = this.description(this);
+    } else {
+        locationText = this.description ? this.description : '';
+    }
+    return locationText;
+};
+V.Location.prototype.getEnterText = function() {
+    var locationText = this.getDescription(),
+        things = V.getThingsInLocation(this.name),
+        characters = V.getCharactersInLocation(this.name);
+
+    if (things && things.length) {
+        locationText += '<br><br>' + V.getThingsText(things);
+    }
+    if (characters && characters.length) {
+        locationText += '<br><br>' + V.getCharactersText(characters);
+    }
+    return locationText;
 };
 
 V.Character = function(o) {
@@ -225,11 +294,27 @@ V.Character = function(o) {
 
     V.index.characters[this.id] = this;
 };
+V.Character.prototype.goTo = function(locationName) {
+    if (this.location == locationName) return;
+
+    if (this.location) {
+        // TODO: check can navigate
+    }
+
+    this.location = locationName;
+    var locationObj = V.findLocationByName(locationName);
+    return locationObj.getEnterText();
+};
 
 
 V.messages = { // TODO: make overrides for this
     notPresent: "What are you talking about?",
-    unbreakable: "Unbreakable, dammit!"
+    unbreakable: "Unbreakable, dammit!",
+    thingsInRoom1: "You can see ",
+    thingsInRoom2: ".",
+    charactersInRoom1: "",
+    charactersInRoom2singular: " is here.",
+    charactersInRoom2plural: " are here."
 };
 
 V.utils = {
