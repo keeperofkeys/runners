@@ -48,7 +48,6 @@
         myself: {
             description: "I probably look much the same as usual.",
             name: "Me",
-            location: "kitchen",
             money: 20,
             personality: {
                 stealth: 'r', // denotes randomized
@@ -78,6 +77,7 @@
         PLAYER: 'me',
         map: map,
         characters: characters,
-        things: things
+        things: things,
+        start: 'kitchen'
     });
 })();

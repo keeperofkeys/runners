@@ -12,6 +12,8 @@ V.init = function(params) {
         dieInAFire();
     }
     V.PLAYER = pChars[0];
+    V.PLAYER.location = null;
+    V.PLAYER.goTo(params.start);
 };
 
 V.index = {
