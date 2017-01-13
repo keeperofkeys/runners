@@ -252,10 +252,10 @@ V.Location.prototype.getEnterText = function() {
         characters = V.getCharactersInLocation(this.name);
 
     if (things && things.length) {
-        locationText += '<br><br>' + V.getThingsText(things);
+        locationText += V.messages.paragraphSeparator + V.getThingsText(things);
     }
     if (characters && characters.length) {
-        locationText += '<br><br>' + V.getCharactersText(characters);
+        locationText += V.messages.paragraphSeparator + V.getCharactersText(characters);
     }
     return locationText;
 };
@@ -298,7 +298,7 @@ V.Character.prototype.goTo = function(locationName) {
     if (this.location == locationName) return;
 
     if (this.location) {
-        // TODO: check can navigate
+        // TODO: check can navigate from current
     }
 
     this.location = locationName;
@@ -314,7 +314,8 @@ V.messages = { // TODO: make overrides for this
     thingsInRoom2: ".",
     charactersInRoom1: "",
     charactersInRoom2singular: " is here.",
-    charactersInRoom2plural: " are here."
+    charactersInRoom2plural: " are here.",
+    paragraphSeparator: '<br><br>'
 };
 
 V.utils = {
