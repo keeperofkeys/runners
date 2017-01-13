@@ -12,6 +12,20 @@ V.init = function(params) {
         dieInAFire();
     }
     V.PLAYER = pChars[0];
+
+
+    V.$CONSOLE = $('#console');
+    V.$INPUT = $('#userInput');
+    V.$FORM = $('#theForm');
+
+
+    V.$FORM.on('submit', function(e) {
+        e.preventDefault();
+        var text = V.$INPUT.val();
+        V.$INPUT.val('');
+        V.$CONSOLE.append('<p class="user">'+ text + '</p>');
+    });
+
     V.PLAYER.location = null;
     V.PLAYER.goTo(params.start);
 };

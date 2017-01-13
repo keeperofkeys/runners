@@ -75,12 +75,14 @@
             }
         }
     };
-
-    V.init({
-        PLAYER: 'me',
-        map: map,
-        characters: characters,
-        things: things,
-        start: 'kitchen'
+    $(document).ready(function() {
+        V.init({
+            PLAYER: 'me',
+            map: map,
+            characters: characters,
+            things: things,
+            start: 'kitchen'
+        });
     });
+
 })();
