@@ -13,27 +13,38 @@ V.init = function(params) {
     }
     V.PLAYER = pChars[0];
 
-
     V.$CONSOLE = $('#console');
     V.$INPUT = $('#userInput');
     V.$FORM = $('#theForm');
-
 
     V.$FORM.on('submit', function(e) {
         e.preventDefault();
         var text = V.$INPUT.val();
         V.$INPUT.val('');
         V.$CONSOLE.append('<p class="user">'+ text + '</p>');
+        V.commandHistory.push(text);
+        V.interpret(text);
     });
 
     V.PLAYER.location = null;
-    V.PLAYER.goTo(params.start);
+    var placeDescription = V.PLAYER.goTo(params.start);
+    V.sendToConsole(placeDescription);
 };
 
 V.index = {
     things: {},
     locations: {},
     characters: {}
+};
+
+V.commandHistory = [];
+
+V.interpret = function (text) {
+    // TODO: parse text!
+};
+
+V.sendToConsole = function(text) {
+    V.$CONSOLE.append('<p class="system">'+text+'</p>');
 };
 
 /**
