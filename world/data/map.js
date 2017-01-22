@@ -52,12 +52,8 @@
             description: "I probably look much the same as usual.",
             name: "Me",
             money: 20,
-            personality: {
-                stealth: 'r', // denotes randomized
-                dexterity: 'r',
-                charisma: 'r',
-                stamina: 20, // 0-100
-                morality: 'r'
+            personality: { // undefined types will be randomized
+                stamina: 20 // 0-100
             },
             inventory: ['piano']
         },
@@ -67,11 +63,7 @@
             location: "r",
             money: 0,
             personality: {
-                stealth: 'r',
-                dexterity: 1,
-                charisma: 'r',
-                stamina: 'r',
-                morality: 'r'
+                dexterity: 1
             }
         }
     };

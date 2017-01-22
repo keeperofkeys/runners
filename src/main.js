@@ -286,7 +286,14 @@ V.Location.prototype.getEnterText = function() {
 };
 
 V.Character = function(o) {
-    var prop;
+    var prop,
+        defautPersonalityAttributes = {
+            stealth: 'r',
+            dexterity: 'r',
+            charisma: 'r',
+            stamina: 'r',
+            morality: 'r'
+        };
 
     this.name = o.name;
     this.id = V.utils.getUniqueId(this.name);
@@ -299,6 +306,7 @@ V.Character = function(o) {
     this.money = o.money || 0;
 
     this.personality = {};
+    o.personality = $.extend(defautPersonalityAttributes, o.personality);
     for (prop in o.personality) {
         if (o.personality[prop] == 'r') {
             this.personality[prop] = Math.floor(Math.random()*21);
