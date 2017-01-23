@@ -28,15 +28,15 @@
         button: {
             name: "button",
             grammarName: "some kind of button",
-            description: function(b) {
-                return "The button is glowing " + (b.on ? "green." : "red.");
+            description: function() {
+                return "The button is glowing " + (this.on ? "green." : "red.");
             },
             location: "kitchen",
             bespoke: {
                 on: false,
-                push: function(b) {
-                    b.on = !b.on; // TODO: this doesn't work - 'this' needs to be passed in somehow - by language parser?
-                    return "Its colour changes to " + (b.on ? "green." : "red.");
+                push: function() {
+                    this.on = !this.on; // TODO: this doesn't work - 'this' needs to be passed in somehow - by language parser?
+                    return "Its colour changes to " + (this.on ? "green." : "red.");
                 }
             }
         },

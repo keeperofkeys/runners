@@ -220,7 +220,7 @@ V.Thing.prototype.lookAt = function(character) {
         if (typeof this.description == 'string') {
             descString = this.description;
         } else if (typeof this.description == 'function') {
-            descString = this.description(this);
+            descString = this.description.apply(this);
         } else {
             descString = '';
         }
