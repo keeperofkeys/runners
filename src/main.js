@@ -400,6 +400,26 @@ V.Character.prototype.goTo = function(locationName) {
     var locationObj = V.findLocationByName(locationName);
     return locationObj._getEnterText();
 };
+V.Character.prototype.examine = function(whosLooking) {
+    whosLooking = whosLooking || V.PLAYER;
+    if (this._isPresent(whosLooking)) {
+        var descString;
+        if (typeof this.description == 'string') {
+            descString = this.description;
+        } else if (typeof this.description == 'function') {
+            descString = this.description.apply(this);
+        } else {
+            descString = '';
+        }
+        return descString;
+    } else {
+        return V.messages.notPresent;
+    }
+};
+V.Character.prototype._isPresent = function(who) {
+    who = who || V.PLAYER;
+    return (this.location == who.location);
+};
 
 
 V.messages = { // TODO: make overrides for this
