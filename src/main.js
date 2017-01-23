@@ -64,32 +64,31 @@ V.interpret = function (text) {
     if (directObject) {
         // what kind of object is it?
         mcguffin = V.findThingsByName(directObject);
-        if (!mcguffin) {
+        if (!mcguffin || !mcguffin.length) {
             mcguffin = V.findCharactersByName(directObject);
-
         }
-        if (mcguffin.length > 0) { // TODO: handle multiple results better
-            mcguffin = mcguffin[0];
-        }
-        if (!mcguffin) {
+        if (mcguffin.length > 0) {
+            mcguffin = mcguffin[0]; // TODO: handle multiple results better
+        } else {
             mcguffin = V.findLocationByName(directObject);
         }
 
-        if (!mcguffin) {
-            output = V.messages.unknownItem;
-        }
+        if (mcguffin) {
 
-        action = mcguffin[verb] ? verb : V.utils.camelCaseify(verb);
+            action = mcguffin[verb] ? verb : V.utils.camelCaseify(verb);
 
-        if (action && typeof mcguffin[verb] == 'function') {
-            output = mcguffin[verb].apply(mcguffin); // carry out action
+            if (action && typeof mcguffin[action] == 'function') {
+                output = mcguffin[action].apply(mcguffin); // carry out action
 
-            if (output) {
-                V.sendToConsole(output);
+                if (output) {
+                    V.sendToConsole(output);
+                }
+                return;
+            } else {
+                output = V.messages.unknownActionToObject;
             }
-            return;
         } else {
-            output = V.messages.unknownActionToObject;
+            output = V.messages.unknownItem;
         }
 
     }
@@ -284,12 +283,14 @@ V.Thing.prototype.examine = function(character) {
         } else {
             descString = '';
         }
-        return descString; // thing methods may have side effects. If they return text, it is handled in the default way for that game
+        return descString;
+        // thing methods may have side effects. If they return text,
+        // it is handled in the default way for that game
     } else {
         return V.messages.notPresent;
     }
 };
-V.Thing.prototype.look = V.Thing.prototype.lookAt; // TODO: proper aliasing
+V.Thing.prototype.look = V.Thing.prototype.lookAt = V.Thing.prototype.examine; // TODO: proper aliasing
 V.Thing.prototype.destroy = function(character) {
     if (this._isPresent(character)) {
         if (this.breakable) {

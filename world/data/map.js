@@ -37,6 +37,9 @@
                 push: function() {
                     this.on = !this.on;
                     return "Its colour changes to " + (this.on ? "green." : "red.");
+                },
+                press: function() {
+                    return this.push();
                 }
             }
         },
