@@ -17,6 +17,7 @@ V.init = function(params) {
     V.$INPUT = $('#userInput');
     V.$FORM = $('#theForm');
 
+    // handle user input
     V.$FORM.on('submit', function(e) {
         e.preventDefault();
         var text = V.$INPUT.val();
@@ -34,13 +35,72 @@ V.init = function(params) {
 V.index = {
     things: {},
     locations: {},
-    characters: {}
+    characters: {},
+    verbs: {
+        look: function() {
+
+        }
+    }
 };
 
 V.commandHistory = [];
-
+V.regexes = {
+    spaceSplitter : /\s+/,
+    initialWS: /^\s+/,
+    finalWS: /\s+$/
+};
 V.interpret = function (text) {
-    // TODO: parse text!
+    text = text.replace(V.regexes.initialWS, '').replace(V.regexes.finalWS);
+
+    var bits = text.split(V.regexes.spaceSplitter),
+        wordCount = bits.length,
+        directObject = bits.length > 1 ? bits[wordCount - 1] : '', // last word
+        verb = bits.length > 0 ? bits.slice(0, wordCount - 1).join(' ') : '',
+        mcguffin,
+        action,
+        output = '';
+
+    // attempt to parse as into <verb> [garbage] [<thing|location|character>]
+    if (directObject) {
+        // what kind of object is it?
+        mcguffin = V.findThingsByName(directObject);
+        if (!mcguffin) {
+            mcguffin = V.findCharactersByName(directObject);
+
+        }
+        if (mcguffin.length > 0) { // TODO: handle multiple results better
+            mcguffin = mcguffin[0];
+        }
+        if (!mcguffin) {
+            mcguffin = V.findLocationByName(directObject);
+        }
+
+        if (!mcguffin) {
+            output = V.messages.unknownItem;
+        }
+
+        action = mcguffin[verb] ? verb : V.utils.camelCaseify(verb);
+
+        if (action && typeof mcguffin[verb] == 'function') {
+            output = mcguffin[verb].apply(mcguffin); // carry out action
+
+            if (output) {
+                V.sendToConsole(output);
+            }
+            return;
+        } else {
+            output = V.messages.unknownActionToObject;
+        }
+
+    }
+
+    // that failed. Try built in commands like "n", "up", "look"
+    // TODO
+
+    if (output) {
+        V.sendToConsole(output);
+    }
+
 };
 
 V.sendToConsole = function(text) {
@@ -213,9 +273,9 @@ V.Thing = function(o) {
     this.id = V.utils.getUniqueId(this.name);
     V.index.things[this.id] = this;
 };
-V.Thing.prototype.lookAt = function(character) {
+V.Thing.prototype.examine = function(character) {
     character = character || V.PLAYER;
-    if (this.isPresent(character)) {
+    if (this._isPresent(character)) {
         var descString;
         if (typeof this.description == 'string') {
             descString = this.description;
@@ -229,8 +289,9 @@ V.Thing.prototype.lookAt = function(character) {
         return V.messages.notPresent;
     }
 };
+V.Thing.prototype.look = V.Thing.prototype.lookAt; // TODO: proper aliasing
 V.Thing.prototype.destroy = function(character) {
-    if (this.isPresent(character)) {
+    if (this._isPresent(character)) {
         if (this.breakable) {
             delete V.index.things[this.id];
         } else {
@@ -240,11 +301,11 @@ V.Thing.prototype.destroy = function(character) {
         return V.messages.notPresent;
     }
 };
-V.Thing.prototype.isPresent = function(character) {
+V.Thing.prototype._isPresent = function(character) {
     character = character || V.PLAYER;
     return (this.location == character.location);
 };
-V.Thing.prototype.getDescription = function() {
+V.Thing.prototype._getDescription = function() {
     var thingText;
     if (typeof this.description == 'function') {
         thingText = this.description(this);
@@ -262,7 +323,7 @@ V.Location = function(id, o) {
 
     V.index.locations[this.id] = this;
 };
-V.Location.prototype.getDescription = function() {
+V.Location.prototype._getDescription = function() {
     var locationText;
     if (typeof this.description == 'function') {
         locationText = this.description(this);
@@ -271,8 +332,8 @@ V.Location.prototype.getDescription = function() {
     }
     return locationText;
 };
-V.Location.prototype.getEnterText = function() {
-    var locationText = this.getDescription(),
+V.Location.prototype._getEnterText = function() {
+    var locationText = this._getDescription(),
         things = V.getThingsInLocation(this.name),
         characters = V.getCharactersInLocation(this.name);
 
@@ -336,12 +397,15 @@ V.Character.prototype.goTo = function(locationName) {
 
     this.location = locationName;
     var locationObj = V.findLocationByName(locationName);
-    return locationObj.getEnterText();
+    return locationObj._getEnterText();
 };
 
 
 V.messages = { // TODO: make overrides for this
     notPresent: "What are you talking about?",
+    unknownItem: "What are you talking about?",
+    unknownAction: "You can't do that. Now or possibly ever.",
+    unknownActionToObject: "You want to do what to it?!",
     unbreakable: "Unbreakable, dammit!",
     thingsInRoom1: "You can see ",
     thingsInRoom2: ".",

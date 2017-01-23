@@ -35,7 +35,7 @@
             bespoke: {
                 on: false,
                 push: function() {
-                    this.on = !this.on; // TODO: this doesn't work - 'this' needs to be passed in somehow - by language parser?
+                    this.on = !this.on;
                     return "Its colour changes to " + (this.on ? "green." : "red.");
                 }
             }
