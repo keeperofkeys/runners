@@ -374,7 +374,7 @@ V.Location.prototype.goTo = function(characterObj, teleport) {
 
 V.Character = function(o) {
     var prop,
-        defautPersonalityAttributes = {
+        defaultPersonalityAttributes = {
             stealth: 'r',
             dexterity: 'r',
             charisma: 'r',
@@ -393,7 +393,7 @@ V.Character = function(o) {
     this.money = o.money || 0;
 
     this.personality = {};
-    o.personality = $.extend(defautPersonalityAttributes, o.personality);
+    o.personality = $.extend(defaultPersonalityAttributes, o.personality);
     for (prop in o.personality) {
         if (o.personality[prop] == 'r') {
             this.personality[prop] = Math.floor(Math.random()*21);
