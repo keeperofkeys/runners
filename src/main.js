@@ -28,7 +28,8 @@ V.init = function(params) {
     });
 
     V.PLAYER.location = null;
-    var placeDescription = V.PLAYER.goTo(params.start);
+    var start = V.findLocationByName(params.start),
+        placeDescription = start.goTo(V.PLAYER, true);
     V.sendToConsole(placeDescription);
 };
 
@@ -346,6 +347,30 @@ V.Location.prototype._getEnterText = function() {
     }
     return locationText;
 };
+V.Location.prototype._canMoveTo = function(destinationName) {
+    var exits = this.exits,
+        dir, dest;
+
+    for (dir in exits) {
+        dest = exits[dir];
+        if (dest == destinationName) {
+            return true;
+        }
+    }
+    return false;
+};
+V.Location.prototype.goTo = function(characterObj, teleport) {
+    characterObj = characterObj || V.PLAYER;
+
+    if (characterObj.location == this) return;
+
+    if (teleport || this._canMoveTo(characterObj.location)) {
+        characterObj.location = this.name;
+        return this._getEnterText();
+    } else {
+        return V.messages.cantGoThatWay;
+    }
+};
 
 V.Character = function(o) {
     var prop,
@@ -389,7 +414,7 @@ V.Character = function(o) {
 
     V.index.characters[this.id] = this;
 };
-V.Character.prototype.goTo = function(locationName) {
+/*V.Character.prototype.goTo = function(locationName) {
     if (this.location == locationName) return;
 
     if (this.location) {
@@ -399,7 +424,7 @@ V.Character.prototype.goTo = function(locationName) {
     this.location = locationName;
     var locationObj = V.findLocationByName(locationName);
     return locationObj._getEnterText();
-};
+};*/
 V.Character.prototype.examine = function(whosLooking) {
     whosLooking = whosLooking || V.PLAYER;
     if (this._isPresent(whosLooking)) {
@@ -428,6 +453,7 @@ V.messages = { // TODO: make overrides for this
     unknownAction: "You can't do that. Now or possibly ever.",
     unknownActionToObject: "You want to do what to it?!",
     unbreakable: "Unbreakable, dammit!",
+    cantGoThatWay: "You can't go that way.",
     thingsInRoom1: "You can see ",
     thingsInRoom2: ".",
     charactersInRoom1: "",

@@ -3,6 +3,7 @@
     var map = {
         kitchen: {
             name: "kitchen",
+            grammarName: "the kitchen",
             description: "It looks like a student kitchen - dirty, with washing up piled high in the sink.",
             exits: {
                 n: "hall"
@@ -10,7 +11,8 @@
         },
         hall: {
             name: 'hall',
-            description: 'The long and winding hall',
+            grammarName: "the hall",
+            description: 'It\'s a long and winding hall',
             exits: {
                 s: "kitchen"
             }
