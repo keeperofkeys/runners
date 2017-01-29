@@ -57,7 +57,7 @@ V.interpret = function (text) {
     var bits = text.split(V.regexes.spaceSplitter),
         wordCount = bits.length,
         directObject = bits.length > 1 ? bits[wordCount - 1] : '', // last word
-        verb = bits.length > 0 ? bits.slice(0, wordCount - 1).join(' ') : '',
+        verb = bits.length > 1 ? bits.slice(0, wordCount - 1).join(' ') : bits[0],
         mcguffin,
         actionName,
         output = V.messages.totallyConfused;
@@ -124,9 +124,29 @@ V.initializeThings = function(things) {
 };
 
 V.initializeLocations = function(locations) {
-    var handle;
+    var handle,
+        locationName,
+        location,
+        direction,
+        destination;
+
     for (handle in locations) {
         new V.Location(handle, locations[handle]); // location Ids can't use GUID system
+    }
+
+    // add move functions
+    for (locationName in V.index.locations) {
+        location = V.index.locations[locationName];
+        for (direction in location.exits) {
+            destination = V.findLocationByName(location.exits[direction]);
+            if (!destination) {
+                V.log("No destination '" + location.exits[direction] + "' exists", 'error');
+                continue;
+            }
+
+            location[direction] =  destination.goTo.bind(destination);
+        }
+
     }
 };
 
@@ -403,7 +423,9 @@ V.Location.prototype._canMoveTo = function(destinationName) {
 V.Location.prototype.goTo = function(characterObj, teleport) {
     characterObj = characterObj || V.PLAYER;
 
-    if (characterObj.location == this.name) return; // already there
+    if (characterObj.location == this.name) { // already there
+        return V.messages.alreadyThere;
+    }
 
     if (teleport || this._canMoveTo(characterObj.location)) {
         characterObj.location = this.name;
@@ -492,7 +514,7 @@ V.Character.prototype._removeFromInventory = function(thingObj) {
     }
 
     if (typeof where == 'undefined') {
-        V.error(thingObj.name + " wasn't in the inventory of player " + this.name);
+        V.log(thingObj.name + " wasn't in the inventory of player " + this.name, 'error');
     } else {
         thingObj.location = this.location;
         if (where === 0) {
@@ -507,9 +529,10 @@ V.Character.prototype._removeFromInventory = function(thingObj) {
 V.Character.prototype._addToInventory = function(thingObj) {
 
 };
-V.error = function(message) {
+V.log = function(message, level) {
+    level = level || 'log';
     if (V.debug) {
-        console.error(message);
+        console[level](message);
     }
 };
 
@@ -523,6 +546,7 @@ V.messages = { // TODO: make overrides for this
     cantGoThatWay: "You can't go that way.",
     genericImpossibleAction: "You can't",
     alreadyHaveIt: "You already have it",
+    alreadyThere: "You do a pirhouette.",
     thingsInRoom1: "You can see ",
     thingsInRoom2: ".",
     charactersInRoom1: "",
