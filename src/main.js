@@ -43,7 +43,7 @@ V.index = {
         }
     }
 };
-
+V.aliases = {}; // overridden in separate file(s)
 V.commandHistory = [];
 V.regexes = {
     spaceSplitter : /\s+/,
@@ -59,7 +59,7 @@ V.interpret = function (text) {
         directObject = bits.length > 1 ? bits[wordCount - 1] : '', // last word
         verb = bits.length > 0 ? bits.slice(0, wordCount - 1).join(' ') : '',
         mcguffin,
-        action,
+        actionName,
         output = V.messages.totallyConfused;
 
     if (directObject) {
@@ -75,12 +75,16 @@ V.interpret = function (text) {
         }
     }
 
+    if (!mcguffin) { // no direct object, so assume it's the location
+        mcguffin = V.findLocationByName(V.PLAYER.location);
+    }
+
     if (mcguffin) {
 
-        action = mcguffin[verb] ? verb : V.utils.camelCaseify(verb);
+        actionName = mcguffin[verb] ? verb : V.utils.camelCaseify(verb);
 
-        if (action && typeof mcguffin[action] == 'function') {
-            output = mcguffin[action].apply(mcguffin); // carry out action
+        if (actionName && typeof mcguffin[actionName] == 'function') {
+            output = mcguffin[actionName].apply(mcguffin); // carry out action
 
             if (output) {
                 V.sendToConsole(output);
@@ -95,7 +99,7 @@ V.interpret = function (text) {
 
 
 
-    // that failed. Try built in commands like "n", "up", "look"
+    // that failed. Try built in commands like "i", "look"
     // TODO
 
     if (output) {
@@ -399,7 +403,7 @@ V.Location.prototype._canMoveTo = function(destinationName) {
 V.Location.prototype.goTo = function(characterObj, teleport) {
     characterObj = characterObj || V.PLAYER;
 
-    if (characterObj.location == this) return;
+    if (characterObj.location == this.name) return; // already there
 
     if (teleport || this._canMoveTo(characterObj.location)) {
         characterObj.location = this.name;
