@@ -1,6 +1,6 @@
 "use strict";
 var V = {};
-
+V.debug = true;
 V.init = function(params) {
     V.initializeLocations(params.map);
     V.initializeThings(params.things);
@@ -51,17 +51,17 @@ V.regexes = {
     finalWS: /\s+$/
 };
 V.interpret = function (text) {
-    text = text.replace(V.regexes.initialWS, '').replace(V.regexes.finalWS);
+    text = text.replace(V.regexes.initialWS, '').replace(V.regexes.finalWS, '');
 
+    // attempt to parse as into <verb> [garbage] [<thing|location|character>]
     var bits = text.split(V.regexes.spaceSplitter),
         wordCount = bits.length,
         directObject = bits.length > 1 ? bits[wordCount - 1] : '', // last word
         verb = bits.length > 0 ? bits.slice(0, wordCount - 1).join(' ') : '',
         mcguffin,
         action,
-        output = '';
+        output = V.messages.totallyConfused;
 
-    // attempt to parse as into <verb> [garbage] [<thing|location|character>]
     if (directObject) {
         // what kind of object is it?
         mcguffin = V.findThingsByName(directObject);
@@ -73,26 +73,27 @@ V.interpret = function (text) {
         } else {
             mcguffin = V.findLocationByName(directObject);
         }
-
-        if (mcguffin) {
-
-            action = mcguffin[verb] ? verb : V.utils.camelCaseify(verb);
-
-            if (action && typeof mcguffin[action] == 'function') {
-                output = mcguffin[action].apply(mcguffin); // carry out action
-
-                if (output) {
-                    V.sendToConsole(output);
-                }
-                return;
-            } else {
-                output = V.messages.unknownActionToObject;
-            }
-        } else {
-            output = V.messages.unknownItem;
-        }
-
     }
+
+    if (mcguffin) {
+
+        action = mcguffin[verb] ? verb : V.utils.camelCaseify(verb);
+
+        if (action && typeof mcguffin[action] == 'function') {
+            output = mcguffin[action].apply(mcguffin); // carry out action
+
+            if (output) {
+                V.sendToConsole(output);
+            }
+            return;
+        } else {
+            output = V.messages.unknownActionToObject;
+        }
+    } else {
+        output = V.messages.unknownItem;
+    }
+
+
 
     // that failed. Try built in commands like "n", "up", "look"
     // TODO
@@ -305,7 +306,14 @@ V.Thing.prototype.destroy = function(character) {
 };
 V.Thing.prototype._isPresent = function(character) {
     character = character || V.PLAYER;
-    return (this.location == character.location);
+    return (this.location == character.location || this.location == "inventory." + character.name);
+};
+V.Thing.prototype._nameOfCarrier = function() {
+    if (this.location.indexOf("inventory") === 0) {
+        return this.location.slice(10);
+    } else {
+        return null;
+    }
 };
 V.Thing.prototype._getDescription = function() {
     var thingText;
@@ -315,6 +323,35 @@ V.Thing.prototype._getDescription = function() {
         thingText = this.description ? this.description : '';
     }
     return thingText;
+};
+V.Thing.prototype.get = function(character) {
+    character = character || V.PLAYER;
+
+    if (this._isPresent(character)) {
+        var whoHasIt = this._nameOfCarrier();
+        if (whoHasIt == character.name) {
+            return V.messages.alreadyHaveIt;
+        } else if (whoHasIt) {
+            return V.messages.genericImpossibleAction; // TODO - someone else has it
+        } else {
+            character.inventory.push(this);
+            this.location = "inventory." + character.name;
+            return V.messages.ok;
+        }
+    } else {
+        return V.messages.notPresent;
+    }
+};
+V.Thing.prototype.drop = function(character) {
+    character = character || V.PLAYER;
+
+    var whoHasIt = this._nameOfCarrier();
+    if (whoHasIt == character.name) {
+        character._removeFromInventory(this);
+        return V.messages.ok;
+    } else {
+        return V.messages.notPresent;
+    }
 };
 
 V.Location = function(id, o) {
@@ -404,27 +441,17 @@ V.Character = function(o) {
 
     this.inventory = [];
     if (o.inventory) {
-        var i, itemName, items;
+        var i, itemName, item;
         for (i = 0; i < o.inventory.length; i++) {
             itemName = o.inventory[i];
-            items = V.findThingsByName(itemName);
-            this.inventory.push(items[0]);
+            item = V.findThingsByName(itemName)[0];
+            this.inventory.push(item);
+            item.location = "inventory." + this.name;
         }
     }
 
     V.index.characters[this.id] = this;
 };
-/*V.Character.prototype.goTo = function(locationName) {
-    if (this.location == locationName) return;
-
-    if (this.location) {
-        // TODO: check can navigate from current
-    }
-
-    this.location = locationName;
-    var locationObj = V.findLocationByName(locationName);
-    return locationObj._getEnterText();
-};*/
 V.Character.prototype.examine = function(whosLooking) {
     whosLooking = whosLooking || V.PLAYER;
     if (this._isPresent(whosLooking)) {
@@ -445,20 +472,60 @@ V.Character.prototype._isPresent = function(who) {
     who = who || V.PLAYER;
     return (this.location == who.location);
 };
+V.Character.prototype._removeFromInventory = function(thingObj) {
+    var inv = this.inventory,
+        count = inv.length,
+        where,
+        item,
+        j;
 
+    for (j = 0; j < inv.length; j++) {
+        item = inv[j];
+        if (item.id === thingObj.id) {
+            where = j;
+            break;
+        }
+    }
+
+    if (typeof where == 'undefined') {
+        V.error(thingObj.name + " wasn't in the inventory of player " + this.name);
+    } else {
+        thingObj.location = this.location;
+        if (where === 0) {
+            this.inventory = inv.slice(1);
+        } else if (where == count - 1) {
+            this.inventory = inv.slice(0, count - 1);
+        } else {
+            this.inventory = inv.slice(0, where).concat(inv.slice(where + 1));
+        }
+    }
+};
+V.Character.prototype._addToInventory = function(thingObj) {
+
+};
+V.error = function(message) {
+    if (V.debug) {
+        console.error(message);
+    }
+};
 
 V.messages = { // TODO: make overrides for this
     notPresent: "What are you talking about?",
+    notCarried: "What are you talking about?",
     unknownItem: "What are you talking about?",
     unknownAction: "You can't do that. Now or possibly ever.",
     unknownActionToObject: "You want to do what to it?!",
     unbreakable: "Unbreakable, dammit!",
     cantGoThatWay: "You can't go that way.",
+    genericImpossibleAction: "You can't",
+    alreadyHaveIt: "You already have it",
     thingsInRoom1: "You can see ",
     thingsInRoom2: ".",
     charactersInRoom1: "",
     charactersInRoom2singular: " is here.",
     charactersInRoom2plural: " are here.",
+    ok: "Okay.",
+    totallyConfused: "Nope. I got nothing. Sorry.",
     paragraphSeparator: '<br><br>'
 };
 
