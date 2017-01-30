@@ -62,6 +62,10 @@ V.interpret = function (text) {
         actionName,
         output = V.messages.totallyConfused;
 
+    V.log('bits: ' + bits);
+    V.log('directObject: ' + directObject);
+    V.log('verb: ' + verb);
+
     if (directObject) {
         // what kind of object is it?
         mcguffin = V.findThingsByName(directObject);
@@ -75,6 +79,8 @@ V.interpret = function (text) {
         }
     }
 
+    V.log('mcguffin: ' + mcguffin);
+
     if (!mcguffin) { // no direct object, so assume it's the location
         mcguffin = V.findLocationByName(V.PLAYER.location);
     }
@@ -83,6 +89,7 @@ V.interpret = function (text) {
 
         actionName = mcguffin[verb] ? verb : V.utils.camelCaseify(verb);
 
+        V.log('actionName: ' + actionName);
         if (actionName && typeof mcguffin[actionName] == 'function') {
             output = mcguffin[actionName].apply(mcguffin); // carry out action
 
@@ -144,7 +151,12 @@ V.initializeLocations = function(locations) {
                 continue;
             }
 
-            location[direction] =  destination.goTo.bind(destination);
+            // Would like to attach function <this room>.n = destination.goTo
+            // however, destination is mutable so this doesn't work
+            // The line below makes a version of the goTo function
+            // with the current value of destination baked into it
+            // see picoCreator's answer here: http://stackoverflow.com/questions/1833588/javascript-clone-a-function
+            location[direction] = destination.goTo.bind(destination);
         }
 
     }
@@ -316,7 +328,7 @@ V.Thing.prototype.examine = function(character) {
         return V.messages.notPresent;
     }
 };
-V.Thing.prototype.look = V.Thing.prototype.lookAt = V.Thing.prototype.examine; // TODO: proper aliasing
+//V.Thing.prototype.look = V.Thing.prototype.lookAt = V.Thing.prototype.examine; // TODO: proper aliasing
 V.Thing.prototype.destroy = function(character) {
     if (this._isPresent(character)) {
         if (this.breakable) {
@@ -382,6 +394,7 @@ V.Location = function(id, o) {
     this.name = o.name;
     this.description = o.description;
     this.exits = o.exits;
+
     this.id = id;
 
     V.index.locations[this.id] = this;
