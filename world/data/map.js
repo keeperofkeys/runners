@@ -1,10 +1,11 @@
 // Game specific data
 (function() {
     var map = {
-        kitchen: {
-            name: "kitchen",
-            grammarName: "the kitchen",
-            description: "It looks like a student kitchen - dirty, with washing up piled high in the sink.",
+        podRoom: {
+            name: "podRoom",
+            grammarName: "the pod room",
+            description: "The dimly lit room is filled with hundreds of human-sized pods just like" +
+            " the open one next you that you just climbed out of.",
             exits: {
                 n: "hall"
             }
@@ -14,7 +15,7 @@
             grammarName: "the hall",
             description: 'It\'s a long and winding hall',
             exits: {
-                s: "kitchen"
+                s: "podRoom"
             }
         }
 
@@ -25,7 +26,7 @@
             name: "whisk",
             grammarName: "a whisk",
             description: "It's pink and dangerous.",
-            location: "kitchen"
+            location: "podRoom"
         },
         button: {
             name: "button",
@@ -33,7 +34,7 @@
             description: function() {
                 return "The button is glowing " + (this.on ? "green." : "red.");
             },
-            location: "kitchen",
+            location: "podRoom",
             bespoke: {
                 on: false,
                 push: function() {
@@ -52,17 +53,38 @@
         }
     };
 
+    var alignments = { // optional
+        leadership: {
+            name: 'authority',
+            grammarName: 'The Colony Authority'
+        },
+        mafia: {
+            name: 'mafia',
+            grammarName: 'The Mafia'
+        },
+        rebels: {
+            name: 'rebels',
+            grammarName: 'the rebels'
+        }
+    };
+
     var characters = {
-        myself: {
+        protagonist: {
             description: "I probably look much the same as usual.",
             name: "Me",
-            money: 20,
-            personality: { // undefined types will be randomized
-                stamina: 20 // 0-100
+            money: 20, // what is a reasonable amount for a newcomer?
+            personality: { // undefined types are randomized
+                experience: 0,
+                morality: 50 // player starts neutral but this is only perceptions of others
+            },
+            alignments: { // nonaligned at start, just average worker
+                leadership: 0,
+                mafia: 0,
+                rebels: 0
             },
             inventory: ['piano']
         },
-        herbert: {
+        greeter: {
             name: "Herbert",
             description: "He's a generic Herbert.",
             location: "r",
@@ -78,7 +100,8 @@
             map: map,
             characters: characters,
             things: things,
-            start: 'kitchen'
+            start: 'podRoom',
+            alignments: alignments
         });
     });
 
