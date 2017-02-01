@@ -4,6 +4,9 @@ V.debug = true;
 V.init = function(params) {
     V.initializeLocations(params.map);
     V.initializeThings(params.things);
+    if (params.alignments) {
+        V.initializeAlignments(params.alignments);
+    }
     V.initializeCharacters(params.characters);
 
     var pChars = V.findCharactersByName(params.PLAYER);
@@ -161,8 +164,15 @@ V.initializeLocations = function(locations) {
 
     }
 };
-
-V.initializeCharacters = function(characters) {
+V.initializeAlignments = function (alignments) {
+    var a, al;
+    V.alignments = []; // no index, just a simple list
+    for (a in alignments) {
+        al = new V.Alignment(alignments[a]);
+        V.alignments.push(al);
+    }
+};
+V.initializeCharacters = function(characters, alignments) {
     var c;
     for (c in characters) {
         new V.Character(characters[c]);
@@ -448,14 +458,22 @@ V.Location.prototype.goTo = function(characterObj, teleport) {
     }
 };
 
+V.Alignment = function(o) {
+    this.name = o.name;
+    this.grammarName = o.grammarName;
+};
+
 V.Character = function(o) {
     var prop,
+        alignmentName, aligmentVal, j,
+        i, itemName, item,
         defaultPersonalityAttributes = {
             stealth: 'r',
             dexterity: 'r',
             charisma: 'r',
             stamina: 'r',
-            morality: 'r'
+            morality: 'r',
+            experience: 'r'
         };
 
     this.name = o.name;
@@ -467,6 +485,19 @@ V.Character = function(o) {
         this.location = o.location;
     }
     this.money = o.money || 0;
+
+    if (V.alignments.length > 0) { // if alignments are used, initialize their values, default 0
+        this.alignments = {};
+        for (j=0; j< V.alignments.length; j++) {
+            alignmentName = V.alignments[j].name;
+            if (alignmentName) {
+                aligmentVal = o.alignments && o.alignments[alignmentName] || 0;
+                this.alignments[alignmentName] = aligmentVal;
+            } else {
+                V.log('an alignment must have a name', 'error');
+            }
+        }
+    }
 
     this.personality = {};
     o.personality = $.extend(defaultPersonalityAttributes, o.personality);
@@ -480,7 +511,6 @@ V.Character = function(o) {
 
     this.inventory = [];
     if (o.inventory) {
-        var i, itemName, item;
         for (i = 0; i < o.inventory.length; i++) {
             itemName = o.inventory[i];
             item = V.findThingsByName(itemName)[0];
