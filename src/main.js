@@ -494,6 +494,15 @@ V.Role._getRandom = function(filters) {
         needle = Math.floor(filteredClone.length * Math.random());
     return filteredClone[needle];
 };
+V.Role._exists = function(roleName) {
+    var j;
+    for (j=0; j< V.roles.length; j++) {
+        if (V.roles[j].name == roleName) {
+            return true;
+        }
+    }
+    return false;
+};
 
 /**
  * constructor for character object
@@ -562,8 +571,10 @@ V.Character = function(o) {
             roleName = o.roles[j];
             if (roleName == 'r') { // multiple random roles are supported
                 roleCount++;
-            } else {
+            } else if (V.Role._exists(roleName)) {
                 this.roles.push(roleName);
+            } else {
+                V.log('nonexistent role: ' + roleName, 'error');
             }
         }
         if (roleCount) { // add random ones at the end
