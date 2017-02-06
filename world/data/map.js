@@ -1,6 +1,6 @@
 // Game specific data
 (function() {
-    var map = {
+    var locations = {
         podRoom: {
             name: "podRoom",
             grammarName: "the pod room",
@@ -13,7 +13,7 @@
         hall: {
             name: 'hall',
             grammarName: "the hall",
-            description: 'It\'s a long and winding hall',
+            description: "It's a long and winding hall",
             exits: {
                 s: "podRoom"
             }
@@ -49,7 +49,8 @@
         piano: {
             name: "piano",
             grammarName: "a piano",
-            description: "It's a baby grand"
+            description: "It's a baby grand",
+            weight: 80
         }
     };
 
@@ -68,6 +69,25 @@
         }
     };
 
+    var roles = {
+        colonist: {
+            name: 'colonist' // base role
+        },
+        farmer: {
+            name: 'farmer'
+        },
+        cop: {
+            name: 'cop'
+        },
+        pilot: {
+            name: 'pilot'
+        },
+        dustman: {
+            name: 'garbage operative'
+        }
+
+    };
+
     var characters = {
         protagonist: {
             description: "I probably look much the same as usual.",
@@ -82,6 +102,7 @@
                 mafia: 0,
                 rebels: 0
             },
+            roles: ['colonist'],
             inventory: ['piano']
         },
         greeter: {
@@ -91,18 +112,25 @@
             money: 0,
             personality: {
                 dexterity: 1
+            },
+            roles: ['pilot','r'],
+            alignments: {
+                mafia: 80,
+                rebels: 40
             }
         }
     };
     $(document).ready(function() {
         V.init({
             PLAYER: 'me',
-            map: map,
+            locations: locations,
             characters: characters,
             things: things,
             start: 'podRoom',
-            alignments: alignments
+            alignments: alignments,
+            roles: roles
         });
     });
+
 
 })();

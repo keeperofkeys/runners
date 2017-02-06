@@ -2,10 +2,15 @@
 var V = {};
 V.debug = true;
 V.init = function(params) {
-    V.initializeLocations(params.map);
+    V.initializeLocations(params.locations);
     V.initializeThings(params.things);
     if (params.alignments) {
+        V.alignments = []; // no index, just a simple list
         V.initializeAlignments(params.alignments);
+    }
+    if (params.roles) {
+        V.roles = [];
+        V.initializeRoles(params.roles);
     }
     V.initializeCharacters(params.characters);
 
@@ -165,11 +170,15 @@ V.initializeLocations = function(locations) {
     }
 };
 V.initializeAlignments = function (alignments) {
-    var a, al;
-    V.alignments = []; // no index, just a simple list
+    var a;
     for (a in alignments) {
-        al = new V.Alignment(alignments[a]);
-        V.alignments.push(al);
+        new V.Alignment(alignments[a]);
+    }
+};
+V.initializeRoles = function (roles) {
+    var r;
+    for (r in roles) {
+        new V.Role(roles[r]);
     }
 };
 V.initializeCharacters = function(characters, alignments) {
@@ -461,10 +470,57 @@ V.Location.prototype.goTo = function(characterObj, teleport) {
 V.Alignment = function(o) {
     this.name = o.name;
     this.grammarName = o.grammarName;
+    V.alignments.push(this);
 };
 
+V.Role = function(o) {
+    this.name = o.name;
+    V.roles.push(this);
+};
+V.Role._cloneRoleList = function(filters) {
+    var clone = [],
+        i,
+        role;
+    for (i in V.roles) {
+        role = V.roles[i];
+        if (filters.indexOf(role.name) < 0) {
+            clone.push(V.roles[i]);
+        }
+    }
+    return clone;
+};
+V.Role._getRandom = function(filters) {
+    var filteredClone = V.Role._cloneRoleList(filters),
+        needle = Math.floor(filteredClone.length * Math.random());
+    return filteredClone[needle];
+};
+
+/**
+ * constructor for character object
+ * @param o
+ * @constructor
+ *
+ * o has form {
+            description: "I probably look much the same as usual.",
+            name: "Me",
+            money: 20,
+            personality: { // undefined types are randomized
+                experience: 0,
+                morality: 50 // player starts neutral but this is only perceptions of others
+            },
+            alignments: {
+                leadership: 0,
+                mafia: 0,
+                rebels: 0
+            },
+            roles: ['colonist'],
+            inventory: ['piano']
+   }
+ *
+ * All values out of 100, except money which is unbounded
+ */
 V.Character = function(o) {
-    var prop,
+    var prop, roleName, roleCount,
         alignmentName, aligmentVal, j,
         i, itemName, item,
         defaultPersonalityAttributes = {
@@ -495,6 +551,25 @@ V.Character = function(o) {
                 this.alignments[alignmentName] = aligmentVal;
             } else {
                 V.log('an alignment must have a name', 'error');
+            }
+        }
+    }
+
+    if (V.roles.length > 0) { // o.roles is a list of role names
+        roleCount = 0;
+        this.roles = []; // list of role names
+        for (j = 0; j< o.roles.length; j++) {
+            roleName = o.roles[j];
+            if (roleName == 'r') { // multiple random roles are supported
+                roleCount++;
+            } else {
+                this.roles.push(roleName);
+            }
+        }
+        if (roleCount) { // add random ones at the end
+            for (j=0; j<roleCount; j++) {
+                roleName = V.Role._getRandom(this.roles).name;
+                this.roles.push(roleName);
             }
         }
     }
