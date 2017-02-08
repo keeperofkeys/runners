@@ -661,9 +661,10 @@ V.Character.prototype._removeFromInventory = function(thingObj) {
 };*/
 
 /**
- * inventory not currently suported; should probably  create items in inventory
+ * inventory not currently supported; should probably  create items in inventory
+ * form of specification matches the form of the input to V.Character constructor
  */
-V.MinionFactory = function(specification, count, candidiateNames) {
+V.MinionFactory = function(specification, count) {
     var j, k,
         individualSpecification,
         individualPersonality,
@@ -672,9 +673,12 @@ V.MinionFactory = function(specification, count, candidiateNames) {
         alignmentName,
         minions = [];
 
-    candidiateNames = candidiateNames || 'r';
     count = count || 1;
 
+    /*
+        helper method to get an item from list of possibilities
+        or return single value, or 'r' if none
+    */
     function _extractRandomItem(arr) {
         if (typeof arr == 'object' ) { // peel one item out of array
             if (arr.length) {
@@ -697,7 +701,7 @@ V.MinionFactory = function(specification, count, candidiateNames) {
         }
         individualSpecification = {
             description: specification.description || V.messages.nothingSpecial,
-            name: _extractRandomItem(candidiateNames),
+            name: _extractRandomItem(specification.name),
             money: specification.money || 'r',
             personality : individualPersonality
         };
