@@ -40,6 +40,7 @@ V.init = function(params) {
         placeDescription = start.goTo(V.PLAYER, true);
     V.sendToConsole(placeDescription);
 };
+V.personalityAttributes = ['dexterity', 'charisma', 'stamina', 'morality', 'experience'];
 
 V.index = {
     things: {},
@@ -655,9 +656,73 @@ V.Character.prototype._removeFromInventory = function(thingObj) {
         }
     }
 };
-V.Character.prototype._addToInventory = function(thingObj) {
+/*V.Character.prototype._addToInventory = function(thingObj) {
 
+};*/
+
+/**
+ * inventory not currently suported; should probably  create items in inventory
+ */
+V.MinionFactory = function(specification, count, candidiateNames) {
+    var j, k,
+        individualSpecification,
+        individualPersonality,
+        individualAlignments,
+        personalityAttribute,
+        alignmentName,
+        minions = [];
+
+    candidiateNames = candidiateNames || 'r';
+    count = count || 1;
+
+    function _extractRandomItem(arr) {
+        if (typeof arr == 'object' ) { // peel one item out of array
+            if (arr.length) {
+                var needle = Math.floor(Math.random() * arr.length);
+                return arr.splice(needle, 1)[0];
+            } else {
+                return 'r'; // run out of items
+            }
+        } else { // always return the singleton value (or undefined)
+            return arr || 'r';
+        }
+    }
+
+    for (j=1; j<=count; j++) {
+        individualPersonality = {};
+        for (k=0; k<V.personalityAttributes.length; k++) {
+            personalityAttribute = V.personalityAttributes[k];
+            individualPersonality[personalityAttribute] = specification.personality ?
+                _extractRandomItem(specification.personality[personalityAttribute]) : 'r';
+        }
+        individualSpecification = {
+            description: specification.description || V.messages.nothingSpecial,
+            name: _extractRandomItem(candidiateNames),
+            money: specification.money || 'r',
+            personality : individualPersonality
+        };
+
+        if (V.roles) {
+            individualSpecification.roles = specification.roles || ['r'];
+            // it is expected that either all minions have the same role and/or random roles;
+            // list of different sets of roles not supported
+        }
+
+        if (V.alignments) {
+            individualAlignments = {};
+            for (k=0; k<V.alignments.length; k++) {
+                alignmentName = V.alignments[k];
+                individualAlignments[alignmentName] = specification.alignments ?
+                    _extractRandomItem(specification.alignments[alignmentName]) : 'r';
+            }
+        }
+
+        minions.push(new V.Character(individualSpecification));
+    }
+
+    return minions;
 };
+
 V.log = function(message, level) {
     level = level || 'log';
     if (V.debug) {
@@ -682,6 +747,7 @@ V.messages = { // TODO: make overrides for this
     charactersInRoom2singular: " is here.",
     charactersInRoom2plural: " are here.",
     ok: "Okay.",
+    nothingSpecial: "Nothing special",
     totallyConfused: "Nope. I got nothing. Sorry.",
     paragraphSeparator: '<br><br>'
 };
