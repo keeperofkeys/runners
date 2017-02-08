@@ -333,15 +333,7 @@ V.Thing = function(o) {
 V.Thing.prototype.examine = function(character) {
     character = character || V.PLAYER;
     if (this._isPresent(character)) {
-        var descString;
-        if (typeof this.description == 'string') {
-            descString = this.description;
-        } else if (typeof this.description == 'function') {
-            descString = this.description.apply(this);
-        } else {
-            descString = '';
-        }
-        return descString;
+        return this._getDescription();
         // thing methods may have side effects. If they return text,
         // it is handled in the default way for that game
     } else {
@@ -374,7 +366,7 @@ V.Thing.prototype._nameOfCarrier = function() {
 V.Thing.prototype._getDescription = function() {
     var thingText;
     if (typeof this.description == 'function') {
-        thingText = this.description(this);
+        thingText = this.description.apply(this);
     } else {
         thingText = this.description ? this.description : '';
     }
@@ -422,7 +414,7 @@ V.Location = function(id, o) {
 V.Location.prototype._getDescription = function() {
     var locationText;
     if (typeof this.description == 'function') {
-        locationText = this.description(this);
+        locationText = this.description.apply(this);
     } else {
         locationText = this.description ? this.description : '';
     }
@@ -523,11 +515,12 @@ V.Role._exists = function(roleName) {
                 mafia: 0,
                 rebels: 0
             },
-            roles: ['colonist'],
-            inventory: ['piano']
+            roles: ['colonist', 'r'],
+            inventory: ['piano'] // atm this has to exist; constructor doesn't create it
    }
  *
  * All values out of 100, except money which is unbounded
+ * random names not currently supported
  */
 V.Character = function(o) {
     var prop, roleName, roleCount,
@@ -611,15 +604,7 @@ V.Character = function(o) {
 V.Character.prototype.examine = function(whosLooking) {
     whosLooking = whosLooking || V.PLAYER;
     if (this._isPresent(whosLooking)) {
-        var descString;
-        if (typeof this.description == 'string') {
-            descString = this.description;
-        } else if (typeof this.description == 'function') {
-            descString = this.description.apply(this);
-        } else {
-            descString = '';
-        }
-        return descString;
+        return this._getDescription();
     } else {
         return V.messages.notPresent;
     }
@@ -627,6 +612,15 @@ V.Character.prototype.examine = function(whosLooking) {
 V.Character.prototype._isPresent = function(who) {
     who = who || V.PLAYER;
     return (this.location == who.location);
+};
+V.Character.prototype._getDescription = function() {
+    var characterText;
+    if (typeof this.description == 'function') {
+        characterText = this.description.apply(this);
+    } else {
+        characterText = this.description ? this.description : '';
+    }
+    return characterText;
 };
 V.Character.prototype._removeFromInventory = function(thingObj) {
     var inv = this.inventory,
@@ -661,8 +655,11 @@ V.Character.prototype._removeFromInventory = function(thingObj) {
 };*/
 
 /**
- * inventory not currently supported; should probably  create items in inventory
- * form of specification matches the form of the input to V.Character constructor
+ * Make a bunch of minions with specified parameters
+ * inventory not currently supported; should probably create items on fly
+ * @param specification {object} same form of input to V.Character constructor
+ *     except lists of possible values are also supported for everything other than roles
+ * @param count {int} how many minions to make
  */
 V.MinionFactory = function(specification, count) {
     var j, k,
