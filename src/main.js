@@ -280,7 +280,7 @@ V.getRandomLocation = function(constraint) {
     return null;
 };
 V.getThingsText = function(things) {
-    var i, text = V.messages.thingsInRoom1,
+    var i, text = "",
         thingCount = things.length;
     for (i=0; i < thingCount; i++) {
         if (i > 0 && i == thingCount - 1) {
@@ -290,18 +290,23 @@ V.getThingsText = function(things) {
         }
         text += things[i].grammarName;
     }
-    return text + '.';
+    if (!thingCount) {
+        text = V.messages.nothing;
+    }
+    return text;
 };
 V.getCharactersText = function(characters) {
-    var i, text = V.messages.charactersInRoom1,
-        thingCount = characters.length;
-    for (i=0; i < thingCount; i++) {
-        if (i > 0) {
-            text += "and "
+    var i, text = "",
+        charCount = characters.length;
+    for (i=0; i < charCount; i++) {
+        if (i > 0 && i == charCount - 1) {
+            text += " and ";
+        } else if (i > 0) {
+            text += ", ";
         }
         text += characters[i].name;
     }
-    return text + (thingCount > 1 ? V.messages.charactersInRoom2plural : V.messages.charactersInRoom2singular);
+    return text;
 };
 
 V.Thing = function(o) {
@@ -426,10 +431,12 @@ V.Location.prototype._getEnterText = function() {
         characters = V.getCharactersInLocation(this.name);
 
     if (things && things.length) {
-        locationText += V.messages.paragraphSeparator + V.getThingsText(things);
+        locationText += V.messages.paragraphSeparator + V.messages.thingsInRoom1 +
+            V.getThingsText(things) + '.';
     }
     if (characters && characters.length) {
-        locationText += V.messages.paragraphSeparator + V.getCharactersText(characters);
+        locationText += V.messages.paragraphSeparator + V.messages.charactersInRoom1
+            + V.getCharactersText(characters) + (characters.length > 1 ? V.messages.charactersInRoom2plural : V.messages.charactersInRoom2singular);
     }
     return locationText;
 };
@@ -650,6 +657,15 @@ V.Character.prototype._removeFromInventory = function(thingObj) {
         }
     }
 };
+V.Character.prototype.i = function () {
+    var inventoryString;
+    if (this.id == V.PLAYER.id) {
+        inventoryString = V.messages.youHave + V.getThingsText(this.inventory);
+    } else {
+        inventoryString = V.messages.theyHave + V.getThingsText(this.inventory);
+    }
+    return inventoryString + '.';
+};
 /*V.Character.prototype._addToInventory = function(thingObj) {
 
 };*/
@@ -747,6 +763,9 @@ V.messages = { // TODO: make overrides for this
     charactersInRoom1: "",
     charactersInRoom2singular: " is here.",
     charactersInRoom2plural: " are here.",
+    youHave: "You have ",
+    theyHave: "They have ",
+    nothing: "nothing",
     ok: "Okay.",
     nothingSpecial: "Nothing special",
     totallyConfused: "Nope. I got nothing. Sorry.",
