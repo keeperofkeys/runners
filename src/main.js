@@ -84,11 +84,19 @@ V.getKnowledge = function (a, b) {
         return V.knowledgeMatrix[a][b];
     }
 };
-V.setKnowledge = function (a, b, data) {
+V.addKnowledge = function (a, b, data) {
+    var currentKnowledge;
     if (!V.knowledgeMatrix[a]) {
         V.knowledgeMatrix[a] = {};
+        V.knowledgeMatrix[a][b] = data;
+        return;
     }
-    V.knowledgeMatrix[a][b] = data;
+    currentKnowledge = V.getKnowledge(a, b);
+    if (!currentKnowledge) {
+        V.knowledgeMatrix[a][b] = data;
+    } else {
+        V.knowledgeMatrix[a][b] = $.extend(currentKnowledge, data);
+    }
 };
 
 V.aliases = {}; // overridden in separate file(s)
@@ -696,12 +704,10 @@ V.Character.prototype._removeFromInventory = function(thingObj) {
         }
     }
 };
-V.Character.prototype._addKnowledge = function (char, knowledgeObj) {
-    var currentKnowledge = V.getKnowledge(this.id, char.id);
-    if (!currentKnowledge) {
-        V.setKnowledge(this.id, char.id, knowledgeObj);
-    } else {
-        V.setKnowledge(this.id, char.id, $.extend(currentKnowledge, knowledgeObj));
+V.Character.prototype._addKnowledge = function (char, knowledgeObj, symmetrical) {
+    V.addKnowledge(this.id, char.id, knowledgeObj);
+    if (symmetrical) {
+        V.addKnowledge(char.id, this.id, knowledgeObj);
     }
 };
 V.Character.prototype._knowledgeOf = function(char) {
