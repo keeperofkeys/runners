@@ -52,6 +52,45 @@ V.index = {
         }
     }
 };
+V.knowledgeMatrix = {};
+/* not upper triangular or symmetric, as one char might know more about another
+    than that char does about them entries are of the form
+    {
+         charid1: {
+                       charid2: {
+                           <some suspected or known trait>: <value>
+                           etc
+                       }
+                   },
+         charid2: {
+                       charid2: {
+                           <some suspected or known trait>: <value>
+                           etc
+                       }
+                   },
+
+
+         null or undefined // ie they don't know anything about them
+    }
+    traits are completely up to the game to define and use
+    but falsy values will be used by the engine in places where it matters
+    if the player knows that person or not
+*/
+// low level getter and setter
+V.getKnowledge = function (a, b) {
+    if (!V.knowledgeMatrix[a]) {
+        return undefined;
+    } else {
+        return V.knowledgeMatrix[a][b];
+    }
+};
+V.setKnowledge = function (a, b, data) {
+    if (!V.knowledgeMatrix[a]) {
+        V.knowledgeMatrix[a] = {};
+    }
+    V.knowledgeMatrix[a][b] = data;
+};
+
 V.aliases = {}; // overridden in separate file(s)
 V.commandHistory = [];
 V.regexes = {
@@ -657,6 +696,17 @@ V.Character.prototype._removeFromInventory = function(thingObj) {
         }
     }
 };
+V.Character.prototype._addKnowledge = function (char, knowledgeObj) {
+    var currentKnowlegde = V.getKnowledge(this.id, char.id);
+    if (!currentKnowlegde) {
+        V.setKnowledge(this.id, char.id, knowledgeObj);
+    } else {
+        V.setKnowledge(this.id, char.id, $.extend(currentKnowlegde, knowledgeObj));
+    }
+};
+V.Character.prototype._knowledgeOf = function(char) {
+    return V.getKnowledge(this.id, char.id);
+};
 V.Character.prototype.i = function () {
     var inventoryString;
     if (this.id == V.PLAYER.id) {
@@ -684,6 +734,7 @@ V.MinionFactory = function(specification, count) {
         individualAlignments,
         personalityAttribute,
         alignmentName,
+        minion,
         minions = [];
 
     count = count || 1;
@@ -734,7 +785,16 @@ V.MinionFactory = function(specification, count) {
             }
         }
 
-        minions.push(new V.Character(individualSpecification));
+        minion = new V.Character(individualSpecification);
+        minions.push(minion);
+    }
+
+    // make them all colleagues
+    for (j=0; j<minions.length; j++) {
+        for (k=0; k<j; k++) {
+            minions[j]._addKnowledge(minions[k], { 'colleague' : true });
+            minions[k]._addKnowledge(minions[j], { 'colleague' : true });
+        }
     }
 
     return minions;

@@ -113,7 +113,7 @@
             personality: {
                 dexterity: 1
             },
-            roles: ['pilot','r'],
+            roles: ['pilot','r','r','r','r'],
             alignments: {
                 mafia: 80,
                 rebels: 40
