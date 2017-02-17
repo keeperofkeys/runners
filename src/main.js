@@ -697,11 +697,11 @@ V.Character.prototype._removeFromInventory = function(thingObj) {
     }
 };
 V.Character.prototype._addKnowledge = function (char, knowledgeObj) {
-    var currentKnowlegde = V.getKnowledge(this.id, char.id);
-    if (!currentKnowlegde) {
+    var currentKnowledge = V.getKnowledge(this.id, char.id);
+    if (!currentKnowledge) {
         V.setKnowledge(this.id, char.id, knowledgeObj);
     } else {
-        V.setKnowledge(this.id, char.id, $.extend(currentKnowlegde, knowledgeObj));
+        V.setKnowledge(this.id, char.id, $.extend(currentKnowledge, knowledgeObj));
     }
 };
 V.Character.prototype._knowledgeOf = function(char) {
