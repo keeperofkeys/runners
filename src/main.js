@@ -28,6 +28,9 @@ V.init = function(params) {
     V.SCREENWindow = V.SCREEN.contentWindow;
     V.SCREENDocument = V.SCREENWindow.document;
     V.pagePath ='world/pages/';
+    V.scrollConsoleToBottom =function () {
+        V.$CONSOLE.scrollTop(V.$CONSOLE.height());
+    };
 
     // handle user input
     V.$FORM.on('submit', function(e) {
@@ -35,9 +38,10 @@ V.init = function(params) {
         var text = V.$INPUT.val();
         V.$INPUT.val('');
         V.$CONSOLE.append('<p class="user">'+ text + '</p>');
-        // TODO: scroll to bottom
+        V.scrollConsoleToBottom();
         V.commandHistory.push(text);
         V.interpret(text);
+        V.scrollConsoleToBottom();
     });
 
     // navigated to new screen
