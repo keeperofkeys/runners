@@ -24,6 +24,8 @@ V.init = function(params) {
     V.$CONSOLE = $('#console');
     V.$INPUT = $('#userInput');
     V.$FORM = $('#theForm');
+    V.SCREEN= $('#screen').get(0).contentWindow;
+    V.pagePath ='world/pages/';
 
     // handle user input
     V.$FORM.on('submit', function(e) {
@@ -31,6 +33,7 @@ V.init = function(params) {
         var text = V.$INPUT.val();
         V.$INPUT.val('');
         V.$CONSOLE.append('<p class="user">'+ text + '</p>');
+        // TODO: scroll to bottom
         V.commandHistory.push(text);
         V.interpret(text);
     });
@@ -458,6 +461,7 @@ V.Location = function(id, o) {
     this.name = o.name;
     this.description = o.description;
     this.exits = o.exits;
+    this.page = o.page;
 
     this.id = id;
 
@@ -502,12 +506,16 @@ V.Location.prototype._canMoveTo = function(destinationName) {
 V.Location.prototype.goTo = function(characterObj, teleport) {
     characterObj = characterObj || V.PLAYER;
 
+    // TODO: as this can be directly invoked, need to account for
+    // referencing an unknown location
+
     if (characterObj.location == this.name) { // already there
         return V.messages.alreadyThere;
     }
 
     if (teleport || this._canMoveTo(characterObj.location)) {
         characterObj.location = this.name;
+        V.SCREEN.location.href = V.pagePath + this.page;
         return this._getEnterText();
     } else {
         return V.messages.cantGoThatWay;

@@ -8,7 +8,8 @@
             " the open one next you that you just climbed out of.",
             exits: {
                 n: "hall"
-            }
+            },
+            page: 'index.html'
         },
         hall: {
             name: 'hall',
@@ -16,7 +17,8 @@
             description: "It's a long and winding hall",
             exits: {
                 s: "podRoom"
-            }
+            },
+            page: 'hall.html'
         }
 
     };
