@@ -24,7 +24,9 @@ V.init = function(params) {
     V.$CONSOLE = $('#console');
     V.$INPUT = $('#userInput');
     V.$FORM = $('#theForm');
-    V.SCREEN= $('#screen').get(0).contentWindow;
+    V.SCREEN = document.getElementById('screen');
+    V.SCREENWindow = V.SCREEN.contentWindow;
+    V.SCREENDocument = V.SCREENWindow.document;
     V.pagePath ='world/pages/';
 
     // handle user input
@@ -36,6 +38,17 @@ V.init = function(params) {
         // TODO: scroll to bottom
         V.commandHistory.push(text);
         V.interpret(text);
+    });
+
+    // navigated to new screen
+    $(V.SCREEN).bind('load', function(e) {
+        var title = $(V.SCREEN).contents().find('title').text(),
+            loc;
+        if (!title) {
+            loc = V.findLocationByName(V.PLAYER.location);
+            title = loc.name;
+        }
+        document.title = title;
     });
 
     V.PLAYER.location = null;
@@ -515,7 +528,9 @@ V.Location.prototype.goTo = function(characterObj, teleport) {
 
     if (teleport || this._canMoveTo(characterObj.location)) {
         characterObj.location = this.name;
-        V.SCREEN.location.href = V.pagePath + this.page;
+        if (this.page) {
+            V.SCREENWindow.location.href = V.pagePath + this.page;
+        }
         return this._getEnterText();
     } else {
         return V.messages.cantGoThatWay;
