@@ -7,9 +7,18 @@
             description: "The dimly lit room is filled with hundreds of human-sized pods just like" +
             " the open one next you that you just climbed out of.",
             exits: {
-                n: "hall"
+                n: "hall",
+                d: "aperture"
             },
-            page: 'index.html'
+            page: 'index.html',
+            down: function () {
+                var hatch = V.findThingsByName('hatch');
+                if (hatch._open) {
+                    return this.d();
+                } else {
+                    return V.messages.cantGoThatWay;
+                }
+            }
         },
         hall: {
             name: 'hall',
@@ -19,6 +28,14 @@
                 s: "podRoom"
             },
             page: 'hall.html'
+        },
+        aperture: {
+            name: "aperture",
+            grammarName: "a service aperture",
+            description: "You're in a small aperture, little more than a metal cube. ",
+            exits: {
+                u: "podRoom"
+            }
         }
 
     };
@@ -30,23 +47,52 @@
             description: "It's pink and dangerous.",
             location: "podRoom"
         },
+        hatch: {
+            name: "hatch",
+            grammarName: "a hatch in the pod room floor",
+            description: function() {
+                return (this._open ? "It's hinged upwards, revealing a small aperture below." : "It's square and lies tightly flush with the floor.");
+            },
+            location: "podRoom",
+            bespoke: {
+                _open: false,
+                open: function() {
+                    return (this._open ? "The hatch is already open." : "It has no handle and lies flush to the floor. You can't grip it.");
+                }
+            },
+            down: function () {
+                var pr = V.findLocationByName('podRoom');
+                return pr.d();
+            }
+        },
         button: {
             name: "button",
             grammarName: "some kind of button",
             description: function() {
-                return "The button is glowing " + (this.on ? "green." : "red.");
+                return "The button is glowing " + (this._on ? "green." : "red.");
             },
             location: "podRoom",
             bespoke: {
-                on: false,
+                _on: false,
                 push: function() {
-                    this.on = !this.on;
-                    return "Its colour changes to " + (this.on ? "green." : "red.");
+                    this._on = !this._on;
+                    var hatch = V.findThingsByName('hatch');
+                    hatch._open = this._on;
+                    return "The button changes to " + (this._on ? "green. A hatch in the floor springs open." : "red. The hatch snaps shut.") + "";
                 },
                 press: function() {
                     return this.push();
                 }
             }
+        },
+        pamphlet: {
+            name: "pamphlet",
+            grammarName: "a shiny yellow pamphlet",
+            location: "aperture",
+            description: "RESIST AUTHORITY LIES AND VIOLENCE!<br>" +
+            "The Authority withholds supplies and locks up anyone who questions their power.<br>" +
+            "Come to Central Square on Moonday to make your feelings heard!<br>" +
+            "Cameras are everywhere; wear a mask."
         },
         piano: {
             name: "piano",
