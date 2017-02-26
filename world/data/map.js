@@ -130,7 +130,10 @@
             things: things,
             start: 'podRoom',
             alignments: alignments,
-            roles: roles
+            roles: roles,
+            messageOverrides: {
+                genericImpossibleAction: "Do what?"
+            }
         });
     });
 

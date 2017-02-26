@@ -21,6 +21,9 @@ V.init = function(params) {
     }
     V.PLAYER = pChars[0];
 
+    if (params.messageOverrides) {
+        V.messages = $.extend(V.messages, params.messageOverrides);
+    }
     V.$CONSOLE = $('#console');
     V.$INPUT = $('#userInput');
     V.$FORM = $('#theForm');
