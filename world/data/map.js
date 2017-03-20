@@ -8,17 +8,18 @@
             " the open one next you that you just climbed out of.",
             exits: {
                 n: "hall",
-                d: "aperture"
-            },
-            page: 'index.html',
-            down: function () {
-                var hatch = V.findThingsByName('hatch');
-                if (hatch._open) {
-                    return this.d();
-                } else {
-                    return V.messages.cantGoThatWay;
+                d: function () {
+                    var hatch = V.findThingsByName('hatch')[0],
+                        aperture;
+                    if (hatch._open) {
+                        aperture = V.findLocationByName('aperture');
+                        return aperture.goTo(null, true); // teleport
+                    } else {
+                        return V.messages.cantGoThatWay;
+                    }
                 }
-            }
+            },
+            page: 'index.html'
         },
         hall: {
             name: 'hall',
@@ -34,7 +35,16 @@
             grammarName: "a service aperture",
             description: "You're in a small aperture, little more than a metal cube. ",
             exits: {
-                u: "podRoom"
+                u: function () {
+                    var hatch = V.findThingsByName('hatch')[0],
+                        podRoom;
+                    if (hatch._open) {
+                        podRoom = V.findLocationByName('podRoom');
+                        return podRoom.goTo(null, true); // teleport
+                    } else {
+                        return "You appear to be trapped down here.";
+                    }
+                }
             }
         }
 
@@ -60,7 +70,7 @@
                     return (this._open ? "The hatch is already open." : "It has no handle and lies flush to the floor. You can't grip it.");
                 }
             },
-            down: function () {
+            d: function () {
                 var pr = V.findLocationByName('podRoom');
                 return pr.d();
             }
@@ -76,7 +86,7 @@
                 _on: false,
                 push: function() {
                     this._on = !this._on;
-                    var hatch = V.findThingsByName('hatch');
+                    var hatch = V.findThingsByName('hatch')[0];
                     hatch._open = this._on;
                     return "The button changes to " + (this._on ? "green. A hatch in the floor springs open." : "red. The hatch snaps shut.") + "";
                 },

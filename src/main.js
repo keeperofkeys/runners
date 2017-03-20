@@ -212,9 +212,10 @@ V.initializeThings = function(things) {
 V.initializeLocations = function(locations) {
     var handle,
         locationName,
-        location,
+        locationObj,
         direction,
-        destination;
+        destination,
+        destinationObj;
 
     for (handle in locations) {
         new V.Location(handle, locations[handle]); // location Ids can't use GUID system
@@ -222,20 +223,25 @@ V.initializeLocations = function(locations) {
 
     // add move functions
     for (locationName in V.index.locations) {
-        location = V.index.locations[locationName];
-        for (direction in location.exits) {
-            destination = V.findLocationByName(location.exits[direction]);
-            if (!destination) {
-                V.log("No destination '" + location.exits[direction] + "' exists", 'error');
-                continue;
-            }
+        locationObj = V.index.locations[locationName];
+        for (direction in locationObj.exits) {
+            destination = locationObj.exits[direction]; // string or function
+            if (typeof destination == "function") {
+                locationObj[direction] = destination.bind(locationObj);
+            } else {
+                destinationObj = V.findLocationByName(destination);
+                if (!destinationObj) {
+                    V.log("No destination '" + destination + "' exists", 'error');
+                    continue;
+                }
 
-            // Would like to attach function <this room>.n = destination.goTo
-            // however, destination is mutable so this doesn't work
-            // The line below makes a version of the goTo function
-            // with the current value of destination baked into it
-            // see picoCreator's answer here: http://stackoverflow.com/questions/1833588/javascript-clone-a-function
-            location[direction] = destination.goTo.bind(destination);
+                // Would like to attach function <this room>.n = destination.goTo
+                // however, destination is mutable so this doesn't work
+                // The line below makes a version of the goTo function
+                // with the current value of destination baked into it
+                // see picoCreator's answer here: http://stackoverflow.com/questions/1833588/javascript-clone-a-function
+                locationObj[direction] = destinationObj.goTo.bind(destinationObj);
+            }
         }
 
     }
