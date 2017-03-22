@@ -85,13 +85,32 @@
             bespoke: {
                 _on: false,
                 push: function() {
-                    this._on = !this._on;
-                    var hatch = V.findThingsByName('hatch')[0];
-                    hatch._open = this._on;
-                    return "The button changes to " + (this._on ? "green. A hatch in the floor springs open." : "red. The hatch snaps shut.") + "";
+                    var broom, hatch, buttonText, hatchText;
+                    if (V.PLAYER.location != 'podRoom' && V.PLAYER.location != 'aperture') {
+                        return V.messages.notPresent;
+                    }
+                    broom = V.findThingsByName('broom')[0];
+                    if (V.PLAYER.location == 'aperture' && !V.PLAYER._has(broom)) {
+                        return "It's too far away to reach from down here. If only you had something long and poke-y...";
+                    } else {
+                        this._on = !this._on;
+                        hatch = V.findThingsByName('hatch')[0];
+                        hatch._open = this._on;
+                        if (this._on) {
+                            buttonText = "The button changes to green.";
+                            hatchText = V.PLAYER.location == 'aperture' ? "" : "A hatch in the floor springs open.";
+                        } else {
+                            buttonText = "The button changes to red.";
+                            hatchText = "The hatch snaps shut";
+                        }
+                        return buttonText + hatchText;
+                    }
                 },
                 press: function() {
                     return this.push();
+                },
+                poke: function () {
+                    return this.press();
                 }
             }
         },
@@ -103,6 +122,12 @@
             "The Authority withholds supplies and locks up anyone who questions their power.<br>" +
             "Come to Central Square on Moonday to make your feelings heard!<br>" +
             "Cameras are everywhere; wear a mask."
+        },
+        broom: {
+            name: "broom",
+            grammarName: "a long-handled broom",
+            location: "aperture",
+            description: "It's sightly manky, but still serviceable."
         },
         piano: {
             name: "piano",

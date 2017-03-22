@@ -749,6 +749,9 @@ V.Character.prototype._addKnowledge = function (char, knowledgeObj, symmetrical)
 V.Character.prototype._knowledgeOf = function(char) {
     return V.getKnowledge(this.id, char.id);
 };
+V.Character.prototype._has = function(thingObj) {
+    return thingObj._nameOfCarrier() == this.name;
+};
 V.Character.prototype.i = function () {
     var inventoryString;
     if (this.id == V.PLAYER.id) {
