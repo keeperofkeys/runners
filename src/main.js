@@ -132,6 +132,8 @@ V.regexes = {
 V.interpret = function (text) {
     text = text.replace(V.regexes.initialWS, '').replace(V.regexes.finalWS, '');
 
+    if (text == "") return;
+
     // attempt to parse as into <verb> [garbage] [<thing|location|character>]
     var bits = text.split(V.regexes.spaceSplitter),
         wordCount = bits.length,
