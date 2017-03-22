@@ -90,18 +90,20 @@
                         return V.messages.notPresent;
                     }
                     broom = V.findThingsByName('broom')[0];
+                    hatch = V.findThingsByName('hatch')[0];
                     if (V.PLAYER.location == 'aperture' && !V.PLAYER._has(broom)) {
-                        return "It's too far away to reach from down here. If only you had something long and poke-y...";
+                        return "It's a little too far away to reach from down here. If only you had something long and poke-y...";
+                    } else if (V.PLAYER.location == 'aperture' && !hatch._open) {
+                        return "The hatch is closed.";
                     } else {
                         this._on = !this._on;
-                        hatch = V.findThingsByName('hatch')[0];
                         hatch._open = this._on;
                         if (this._on) {
                             buttonText = "The button changes to green.";
                             hatchText = V.PLAYER.location == 'aperture' ? "" : "A hatch in the floor springs open.";
                         } else {
                             buttonText = "The button changes to red.";
-                            hatchText = "The hatch snaps shut";
+                            hatchText = "The hatch snaps shut.";
                         }
                         return buttonText + hatchText;
                     }
@@ -110,7 +112,7 @@
                     return this.push();
                 },
                 poke: function () {
-                    return this.press();
+                    return this.push();
                 }
             }
         },
