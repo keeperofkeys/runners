@@ -124,6 +124,7 @@ V.addKnowledge = function (a, b, data) {
 
 V.aliases = {}; // overridden in separate file(s)
 V.commandHistory = [];
+V.lastCommand = ['', {}];
 V.regexes = {
     spaceSplitter : /\s+/,
     initialWS: /^\s+/,
@@ -141,7 +142,8 @@ V.interpret = function (text) {
         verb = bits.length > 1 ? bits.slice(0, wordCount - 1).join(' ') : bits[0],
         mcguffin,
         actionName,
-        output = V.messages.totallyConfused;
+        output = V.messages.totallyConfused,
+        successfulAction = false;
 
     V.log('bits: ' + bits);
     V.log('directObject: ' + directObject);
@@ -149,15 +151,21 @@ V.interpret = function (text) {
 
     if (directObject) {
         // what kind of object is it?
-        mcguffin = V.findThingsByName(directObject);
-        if (!mcguffin || !mcguffin.length) {
-            mcguffin = V.findCharactersByName(directObject);
-        }
-        if (mcguffin.length > 0) {
-            mcguffin = mcguffin[0]; // TODO: handle multiple results better
+
+        if (['it', 'him', 'her'].indexOf(directObject) >= 0) {
+            mcguffin = V.lastCommand[1];
         } else {
-            mcguffin = V.findLocationByName(directObject);
+            mcguffin = V.findThingsByName(directObject);
+            if (!mcguffin || !mcguffin.length) {
+                mcguffin = V.findCharactersByName(directObject);
+            }
+            if (mcguffin.length > 0) {
+                mcguffin = mcguffin[0]; // TODO: handle multiple results better
+            } else {
+                mcguffin = V.findLocationByName(directObject);
+            }
         }
+
     }
 
     V.log('mcguffin: ' + mcguffin);
@@ -173,11 +181,11 @@ V.interpret = function (text) {
         V.log('actionName: ' + actionName);
         if (actionName && typeof mcguffin[actionName] == 'function') {
             output = mcguffin[actionName].apply(mcguffin); // carry out action
-
-            if (output) {
+            successfulAction = true;
+/*            if (output) {
                 V.sendToConsole(output);
             }
-            return;
+            return;*/
         } else {
             output = V.messages.unknownActionToObject;
         }
@@ -185,15 +193,18 @@ V.interpret = function (text) {
         output = V.messages.unknownItem;
     }
 
+    if (!successfulAction) {
+        // that failed. Try built in commands like "i", "look"
+        // TODO
+    }
 
-
-    // that failed. Try built in commands like "i", "look"
-    // TODO
+    V.lastCommand = [actionName, mcguffin];
 
     if (output) {
         V.sendToConsole(output);
     }
 
+    return successfulAction;
 };
 
 V.sendToConsole = function(text) {
