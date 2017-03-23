@@ -378,15 +378,7 @@ V.getThingsText = function(things) {
     var i, text = "",
         thingCount = things.length;
     for (i=0; i < thingCount; i++) {
-        if (i > 0 && i == thingCount - 1) {
-            if (thingCount == 2) {
-                text += " and ";
-            } else {
-                text += ", and ";
-            }
-        } else if (i > 0) {
-            text += ", ";
-        }
+        text += V.utils.getListConnectorString(i, thingCount);
         text += things[i].grammarName;
     }
     if (!thingCount) {
@@ -398,11 +390,7 @@ V.getCharactersText = function(characters) {
     var i, text = "",
         charCount = characters.length;
     for (i=0; i < charCount; i++) {
-        if (i > 0 && i == charCount - 1) {
-            text += " and ";
-        } else if (i > 0) {
-            text += ", ";
-        }
+        text += V.utils.getListConnectorString(i, charCount);
         text += characters[i].name;
     }
     return text;
@@ -933,5 +921,20 @@ V.utils = {
             obj = obj.toLowerCase();
         }
         return obj;
+    },
+    getListConnectorString: function(i, count) {
+        var text = "";
+        if (i > 0) {
+            if (i == count - 1) {
+                if (count == 2) {
+                    text = " and ";
+                } else {
+                    text = ", and ";
+                }
+            } else {
+                text = ", ";
+            }
+        }
+        return text;
     }
 };
