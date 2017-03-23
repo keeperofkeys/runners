@@ -379,9 +379,13 @@ V.getThingsText = function(things) {
         thingCount = things.length;
     for (i=0; i < thingCount; i++) {
         if (i > 0 && i == thingCount - 1) {
-            text += ", and "
+            if (thingCount == 2) {
+                text += " and ";
+            } else {
+                text += ", and ";
+            }
         } else if (i > 0) {
-            text += " and "
+            text += ", ";
         }
         text += things[i].grammarName;
     }

@@ -144,7 +144,7 @@
     };
 
     var alignments = { // optional
-        leadership: {
+        authority: {
             name: 'authority',
             grammarName: 'The Colony Authority'
         },
@@ -173,6 +173,12 @@
         },
         dustman: {
             name: 'garbage operative'
+        },
+        crusher: {
+            name: 'crusher'
+        },
+        greeter: {
+            name: 'greeter'
         }
 
     };
@@ -187,7 +193,7 @@
                 morality: 50 // player starts neutral but this is only perceptions of others
             },
             alignments: { // nonaligned at start, just average worker
-                leadership: 0,
+                authority: 0,
                 mafia: 0,
                 rebels: 0
             },
@@ -196,16 +202,18 @@
         },
         greeter: {
             name: "Herbert",
-            description: "He's a generic Herbert.",
-            location: "r",
-            money: 0,
+            description: "A greeter, dressed in a shiny yellow jumpsuit that somehow doesn't quite convey " +
+            "authority they way it's intended to.",
+            location: "hall",
+            money: 40,
             personality: {
                 dexterity: 1
             },
-            roles: ['pilot','r','r','r','r'],
+            roles: ['greeter', 'cop'],
             alignments: {
-                mafia: 80,
-                rebels: 40
+                mafia: 0,
+                rebels: 0,
+                authority: 90
             }
         }
     };
