@@ -64,6 +64,8 @@
                 return (this._open ? "It's hinged upwards, revealing a small aperture below." : "It's square and lies tightly flush with the floor.");
             },
             location: "podRoom",
+            immovable: true,
+            hidden: true,
             bespoke: {
                 _open: false,
                 open: function() {
@@ -82,6 +84,7 @@
                 return "The button is glowing " + (this._on ? "green." : "red.");
             },
             location: "podRoom",
+            immovable: true,
             bespoke: {
                 _on: false,
                 push: function() {
@@ -98,6 +101,7 @@
                     } else {
                         this._on = !this._on;
                         hatch._open = this._on;
+                        hatch.hidden = false;
                         if (this._on) {
                             buttonText = "The button changes to green.";
                             hatchText = V.PLAYER.location == 'aperture' ? "" : "A hatch in the floor springs open.";

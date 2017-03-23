@@ -290,24 +290,26 @@ V.genericSearch = function(params, type) {
         key, searchTarget, criterion,
         candidates = {},
         searchTerms = Object.keys(params),
-        searchTerm,
+        searchTerm, searchCriterion,
         j;
 
     for (j=0; j < searchTerms.length; j++) {
         searchTerm = searchTerms[j].toLowerCase();
-        criterion = params[searchTerm].toLowerCase();
+        criterion = V.utils.makeLowerCaseIfString(params[searchTerm]);
 
         if (j==0) {
             for (key in index) {
                 searchTarget = index[key];
-                if (searchTarget[searchTerm] && searchTarget[searchTerm].toLowerCase() === criterion) {
+                searchCriterion = V.utils.makeLowerCaseIfString(searchTarget[searchTerm]);
+                if (typeof searchTarget[searchTerm] != 'undefined' && searchCriterion === criterion) {
                     candidates[key] = searchTarget; // can't delete items from index, so accumulate the first pass into candidates
                 }
             }
         } else {
             for (key in candidates) {
                 searchTarget = candidates[key];
-                if (!searchTarget[searchTerm] || searchTarget[searchTerm].toLowerCase() !== criterion) {
+                searchCriterion = V.utils.makeLowerCaseIfString(searchTarget[searchTerm]);
+                if (typeof searchTarget[searchTerm] == 'undefined' || searchCriterion !== criterion) {
                     delete candidates[key]; // remove candidates that fail subsequent passes
                 }
             }
@@ -330,8 +332,12 @@ V.findLocationByName = function(name) {
         return null;
     }
 };
-V.getThingsInLocation = function(locationName) {
-    return V.genericSearch({'location': locationName}, 'things');
+V.getThingsInLocation = function(locationName, includeHidden) {
+    if (includeHidden) {
+        return V.genericSearch({'location': locationName}, 'things');
+    } else {
+        return V.genericSearch({'location': locationName, 'hidden': false}, 'things');
+    }
 };
 V.getCharactersInLocation = function(locationName, includePlayer) {
     var chars = V.genericSearch({'location': locationName}, 'characters'),
@@ -412,6 +418,7 @@ V.Thing = function(o) {
     }
     this.location = o.location || null; // name, not id
     this.hidden = o.hidden || false;
+    this.immovable = o.immovable || false;
 
     // add bespoke properties
     if (o.bespoke) {
@@ -473,7 +480,7 @@ V.Thing.prototype.get = function(character) {
         var whoHasIt = this._nameOfCarrier();
         if (whoHasIt == character.name) {
             return V.messages.alreadyHaveIt;
-        } else if (whoHasIt) {
+        } else if (whoHasIt || this.immovable) {
             return V.messages.genericImpossibleAction; // TODO - someone else has it
         } else {
             character.inventory.push(this);
@@ -916,5 +923,11 @@ V.utils = {
             }
         }
         return result;
+    },
+    makeLowerCaseIfString: function(obj) {
+        if (typeof obj == 'string') {
+            obj = obj.toLowerCase();
+        }
+        return obj;
     }
 };
